@@ -8,27 +8,12 @@ The Avionics Subteam focuses on the collection, analysis, and storage of data fr
 
 ## Table of Contents
 1. [Getting Started](#getting-started)
-    - [Prerequisites](#prerequisites)
-    - [Installation](#installation)
-2. [Usage](#usage)
-3. [Contribution](#contribution)
-4. [License](#license)
-5. [Contact](#contact)
-6. [Acknowledgments](#acknowledgments)
+2. [License](#license)
+3. [Contact](#contact)
+4. [Acknowledgments](#acknowledgments)
 
 ## Getting Started
-
-### Prerequisites
-- A list of software, hardware, and other resources required for setting up the project.
-
-### Installation
-- Step-by-step instructions for setting up the development environment.
-
-## Usage
-- Instructions for running the software, executing tests, and any other relevant usage information.
-
-## Contribution
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on code of conduct, and the process for submitting pull requests to us.
+All the documentation and guides are located on the wiki page inside this repository. If there is anything missing or needs further work, feel free to email one of the contacts below
 
 ## License
 This project is licensed under the [MIT License](LICENSE.md) - see the [LICENSE.md](LICENSE.md) file for details.
