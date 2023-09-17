@@ -4,7 +4,9 @@
 This repository is dedicated to the Avionics Subteam of the Texas A&M University Rocket Engine Design Team (TAMU RED). Our mission is aligned with the overarching goals of TAMU RED: to provide students with an avenue to develop an intuitive understanding of liquid rocket propulsion and other vital systems involved in rocketry, through an iterative process of designing, manufacturing, and testing.
 
 ### Subteam Mission
-The Avionics Subteam focuses on the collection, analysis, and storage of data from rocket tests. This includes but is not limited to sensor interfacing, data logging, and telemetry. Our work ensures that the data required for successful design iterations and safety protocols are accurately and reliably collected.
+The Avionics and Controls Cystems (AVI) team designs, builds, and tests the electronics and algorithms for the Genesis engine, including sensors, motorized valves, dataloggers, and control systems.
+
+Avionic systems on the Genesis engine play a critical role in ensuring the safe and reliable operation of the engine during all stages of operation. These systems are responsible for collecting, analyzing, and storing data from a variety of sensors throughout the engine, and using that data to make decisions about how the engine should operate. Our work ensures that the data required for successful design iterations and safety protocols are accurately and reliably collected.
 
 ## Table of Contents
 1. [Getting Started](#getting-started)
@@ -19,7 +21,9 @@ The Avionics Subteam focuses on the collection, analysis, and storage of data fr
 ## Getting Started
 
 ### Prerequisites
-- A list of software, hardware, and other resources required for setting up the project.
+- [Arduino IDE](https://www.arduino.cc/en/software)
+- [GitHub Desktop](https://desktop.github.com/) - highly recommended for efficiently working with GitHub
+- Other software, hardware, and other resources required for setting up the project.
 
 ### Installation
 - Step-by-step instructions for setting up the development environment.
