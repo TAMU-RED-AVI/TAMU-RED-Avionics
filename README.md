@@ -18,7 +18,7 @@ Avionic systems on the Genesis engine play a critical role in ensuring the safe 
 All the documentation and guides are located on the [wiki page](Home) inside this repository. If there is anything missing or needs further work, feel free to email one of the contacts below
 
 ## License
-This project is licensed under the [MIT License](LICENSE.md) - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the [MIT License](LICENSE.md) - see the [LICENSE.md](LICENSE.md) file for details. (WIP add an official license)
 
 ## Contact
 For any questions related to this repository, feel free to reach out to the team leads:
@@ -30,4 +30,3 @@ For any questions related to this repository, feel free to reach out to the team
 ## Acknowledgments
 - Thank you to all TAMU RED team members for their contributions and efforts.
 - Special thanks to [TAMU](https://www.tamu.edu/) for their academic and infrastructural support.
-- Any other acknowledgments or credits.
