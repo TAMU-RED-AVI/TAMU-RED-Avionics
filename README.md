@@ -15,7 +15,7 @@ Avionic systems on the Genesis engine play a critical role in ensuring the safe 
 4. [Acknowledgments](#acknowledgments)
 
 ## Getting Started
-All the documentation and guides are located on the [wiki page](Home) inside this repository. If there is anything missing or needs further work, feel free to email one of the contacts below
+All the documentation and guides are located on the [wiki page](https://github.com/TAMU-RED-AVI/TAMU-RED-AVI/wiki) inside this repository. If there is anything missing or needs further work, feel free to email one of the contacts below
 
 ## License
 This project is licensed under the [MIT License](LICENSE.md) - see the [LICENSE.md](LICENSE.md) file for details. (WIP add an official license)
