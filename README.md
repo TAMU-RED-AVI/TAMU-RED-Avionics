@@ -36,8 +36,9 @@ This project is licensed under the [MIT License](LICENSE.md) - see the [LICENSE.
 ## Contact
 For any questions related to this repository, feel free to reach out to the team leads:
 
-- Team Lead 1: [Email](mailto:email@example.com)
-- Team Lead 2: [Email](mailto:email@example.com)
+- Project Manager: [Sterling](mailto:sterling@tamu.edu)
+- AVI Team Lead: [Micheal](mailto:mguarnery@tamu.edu)
+- Repo Manager: [Aiden Kampwerth](mailto:kampwerthaiden@tamu.edu)
 
 ## Acknowledgments
 - Thank you to all TAMU RED team members for their contributions and efforts.
