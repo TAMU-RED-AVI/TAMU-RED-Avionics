@@ -36,8 +36,8 @@ This project is licensed under the [MIT License](LICENSE.md) - see the [LICENSE.
 ## Contact
 For any questions related to this repository, feel free to reach out to the team leads:
 
-- Project Manager: [Sterling](mailto:sterling@tamu.edu)
-- AVI Team Lead: [Micheal](mailto:mguarnery@tamu.edu)
+- Project Manager: [Sterling Beakley](mailto:sterling@tamu.edu)
+- AVI Team Lead: [Micheal Guarnery](mailto:mguarnery@tamu.edu)
 - Repo Manager: [Aiden Kampwerth](mailto:kampwerthaiden@tamu.edu)
 
 ## Acknowledgments
