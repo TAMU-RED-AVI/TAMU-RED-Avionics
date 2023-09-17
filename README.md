@@ -1,4 +1,4 @@
-# TAMU RED Avionics Subteam Repository
+# TAMU RED Avionics Repository
 
 ## About
 This repository is dedicated to the Avionics Subteam of the Texas A&M University Rocket Engine Design Team (TAMU RED). Our mission is aligned with the overarching goals of TAMU RED: to provide students with an avenue to develop an intuitive understanding of liquid rocket propulsion and other vital systems involved in rocketry, through an iterative process of designing, manufacturing, and testing.
