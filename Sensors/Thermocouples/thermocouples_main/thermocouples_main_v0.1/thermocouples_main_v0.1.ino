@@ -109,10 +109,10 @@ void loop(void) {
 
   // read all sensors temps
   for (int i = 1; i <= num_MCP9600; ++i) {
-    tcaselect(i);
-    Serial.print("TC "); Serial.println(i);
-    Serial.print("Hot Junction (C):        "); Serial.println(mcp.readThermocouple());
-    Serial.print("Cold Junction (C):       "); Serial.println(mcp.readAmbient());
+    tcaselect(i - 1);
+    Serial.print("TC "); Serial.print(i); Serial.print(" ");
+    Serial.print("Temp (C):        "); Serial.println(mcp.readThermocouple());
+    // Serial.print("Cold Temp (C):       "); Serial.println(mcp.readAmbient());
   }
 
   // record total time to measure temp
