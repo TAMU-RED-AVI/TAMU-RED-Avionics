@@ -88,11 +88,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::setupDemo(int demoIndex)
 {
-  setupRealtimeDataDemo(ui->customPlot);
+  setupRealtimeDataDemo(ui->customPlot1);
   setWindowTitle("QCustomPlot: "+demoName);
   statusBar()->clearMessage();
   currentDemoIndex = demoIndex;
-  ui->customPlot->replot();
+  ui->customPlot1->replot();
 }
 
 void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot)
@@ -133,7 +133,7 @@ void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot)
 void MainWindow::bracketDataSlot()
 {
   double secs = QCPAxisTickerDateTime::dateTimeToKey(QDateTime::currentDateTime());
-  
+
   // update data to make phase move:
   int n = 500;
   double phase = secs*5;
@@ -144,12 +144,12 @@ void MainWindow::bracketDataSlot()
     x[i] = i/(double)(n-1)*34 - 17;
     y[i] = qExp(-x[i]*x[i]/20.0)*qSin(k*x[i]+phase);
   }
-  ui->customPlot->graph()->setData(x, y);
-  
+  ui->customPlot1->graph()->setData(x, y);
+
   itemDemoPhaseTracer->setGraphKey((8*M_PI+fmod(M_PI*1.5-phase, 6*M_PI))/k);
-  
-  ui->customPlot->replot();
-  
+
+  ui->customPlot1->replot();
+
   // calculate frames per second:
   double key = secs;
   static double lastFpsKey;
@@ -160,7 +160,7 @@ void MainWindow::bracketDataSlot()
     ui->statusBar->showMessage(
           QString("%1 FPS, Total Data points: %2")
           .arg(frameCount/(key-lastFpsKey), 0, 'f', 0)
-          .arg(ui->customPlot->graph(0)->data()->size())
+            .arg(ui->customPlot1->graph(0)->data()->size())
           , 0);
     lastFpsKey = key;
     frameCount = 0;
@@ -208,15 +208,15 @@ void MainWindow::allScreenShots()
   QString fileName = demoName.toLower()+".png";
   fileName.replace(" ", "");
   pm.save("./screenshots/"+fileName);
-  
+
   if (currentDemoIndex < 19)
   {
     if (dataTimer.isActive())
       dataTimer.stop();
     dataTimer.disconnect();
-    delete ui->customPlot;
-    ui->customPlot = new QCustomPlot(ui->centralWidget);
-    ui->verticalLayout->addWidget(ui->customPlot);
+    delete ui->customPlot1;
+    ui->customPlot1 = new QCustomPlot(ui->centralWidget);
+    ui->verticalLayout->addWidget(ui->customPlot1);
     setupDemo(currentDemoIndex+1);
     // setup delay for demos that need time to develop proper look:
     int delay = 250;

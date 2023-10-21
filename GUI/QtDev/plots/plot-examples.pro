@@ -13,13 +13,16 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
            mainwindow.cpp \
-         ../QCustomPlot/qcustomplot.cpp
+         ../../qcustomplot.cpp \
+         ../RootFinder.cpp
 
 HEADERS  += mainwindow.h \
-         ../QCustomPlot/qcustomplot.h
+         ../../qcustomplot.h \
+         ../RootFinder.h
+
 
 FORMS    += mainwindow.ui
 
-INCLUDEPATH += "..\Eigen"
+INCLUDEPATH += "../Eigen"
 
 LIBS += -lws2_32

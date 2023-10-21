@@ -15,7 +15,7 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
-#include "../QCustomPlot/qcustomplot.h"
+#include "../../qcustomplot.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -24,7 +24,7 @@ class Ui_MainWindow
 public:
     QWidget *centralWidget;
     QVBoxLayout *verticalLayout;
-    QCustomPlot *customPlot;
+    QCustomPlot *customPlot1;
     QStatusBar *statusBar;
 
     void setupUi(QMainWindow *MainWindow)
@@ -38,10 +38,10 @@ public:
         verticalLayout->setSpacing(6);
         verticalLayout->setContentsMargins(11, 11, 11, 11);
         verticalLayout->setObjectName("verticalLayout");
-        customPlot = new QCustomPlot(centralWidget);
-        customPlot->setObjectName("customPlot");
+        customPlot1 = new QCustomPlot(centralWidget);
+        customPlot1->setObjectName("customPlot1");
 
-        verticalLayout->addWidget(customPlot);
+        verticalLayout->addWidget(customPlot1);
 
         MainWindow->setCentralWidget(centralWidget);
         statusBar = new QStatusBar(MainWindow);
