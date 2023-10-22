@@ -64,8 +64,8 @@ const int pt1_analog_max = 921.6; //analog reading of pressure transducer at 100
 const int pt1_psi_max = 300; //max psi value of transducer being used
 
 // 500 psi PT ADC values
-  const int pt2_analog_zero = 102.4; //analog reading of pressure transducer at 0psi
-  const int pt2_analog_max = 921.6; //analog reading of pressure transducer at 100psi
+const int pt2_analog_zero = 102.4; //analog reading of pressure transducer at 0psi
+const int pt2_analog_max = 921.6; //analog reading of pressure transducer at 100psi
 const int pt2_psi_max = 500; //max psi value of transducer being used
 
 // temp reading variables
@@ -73,7 +73,6 @@ float pt_analog_reading1 = 0; //variable to store the value coming from the pres
 float pt_digital_reading1 = 0; //variable to store the value coming from the pressure transducer
 float pt_analog_reading2 = 0; //variable to store the value coming from the pressure transducer
 float pt_digital_reading2 = 0; //variable to store the value coming from the pressure transducer
-
 
 /* 
 ACCELEROMETER SETUP
@@ -93,7 +92,7 @@ const float accoffset = 4180;
 
 /*
 LOAD CELL SET UP
-------------------------------
+----------------
 */
 
 // import library
@@ -102,6 +101,7 @@ LOAD CELL SET UP
 // define data and clock pins for each loadcell
 const int LOADCELL_DOUT_PIN = 5;
 const int LOADCELL_SCK_PIN = 4;
+
 // const int LOADCELL_DOUT_PIN2 = 6;
 // const int LOADCELL_SCK_PIN2 = 7;
 
@@ -191,9 +191,11 @@ void setup(void) {
   --------------------
   */
 
-  Serial.begin(1000000);  // start serial for output
+  // start serial monitor
+  Serial.begin(1000000);
   Wire1.setClock(1000000);
-  // put your setup code here, to run once:
+
+  // detect and enable IMU
   detectIMU();
   Serial.println("IMU Detected...");
   enableIMU();
@@ -205,12 +207,15 @@ void setup(void) {
   -----------------------
   */
 
+  // start serial
   Serial.begin(500000);
   Serial.println("Initializing the scale");
 
+  // load cell setup
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   // scale2.begin(LOADCELL_DOUT_PIN2, LOADCELL_SCK_PIN2);
 
+  // scale and tare load cells
   Serial.println("Taring the scale");
   scale.set_scale(2280.f);  // Set the scale factor for conversion to kilograms
   scale.tare();             // Reset the scale to zero
