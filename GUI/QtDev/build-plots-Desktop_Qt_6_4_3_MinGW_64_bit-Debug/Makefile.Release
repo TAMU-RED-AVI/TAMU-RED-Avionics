@@ -2295,9 +2295,6 @@ release/main.o: ../plots/main.cpp ../plots/mainwindow.h \
 		C:/Qt/6.4.3/mingw_64/include/QtCore/QTimeZone \
 		ui_mainwindow.h \
 		C:/Qt/6.4.3/mingw_64/include/QtWidgets/QApplication \
-		C:/Qt/6.4.3/mingw_64/include/QtWidgets/QStatusBar \
-		C:/Qt/6.4.3/mingw_64/include/QtWidgets/QVBoxLayout \
-		../../qcustomplot.h \
 		../Eigen/Eigen/Dense \
 		../Eigen/Eigen/Core \
 		../Eigen/Eigen/src/Core/util/DisableStupidWarnings.h \
@@ -3080,10 +3077,6 @@ release/mainwindow.o: ../plots/mainwindow.cpp ../plots/mainwindow.h \
 		C:/Qt/6.4.3/mingw_64/include/QtCore/QElapsedTimer \
 		C:/Qt/6.4.3/mingw_64/include/QtCore/QTimeZone \
 		ui_mainwindow.h \
-		C:/Qt/6.4.3/mingw_64/include/QtWidgets/QApplication \
-		C:/Qt/6.4.3/mingw_64/include/QtWidgets/QStatusBar \
-		C:/Qt/6.4.3/mingw_64/include/QtWidgets/QVBoxLayout \
-		../../qcustomplot.h \
 		C:/Qt/6.4.3/mingw_64/include/QtGui/QScreen \
 		C:/Qt/6.4.3/mingw_64/include/QtWidgets/QMessageBox \
 		C:/Qt/6.4.3/mingw_64/include/QtCore/QMetaEnum

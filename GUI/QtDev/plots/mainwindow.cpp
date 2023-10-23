@@ -117,7 +117,7 @@ void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot)
   timeTicker->setTimeFormat("%h:%m:%s");
   customPlot->xAxis->setTicker(timeTicker);
   customPlot->axisRect()->setupFullAxesBox();
-  customPlot->yAxis->setRange(-1.2, 1.2);
+  customPlot->yAxis->setRange(-180, 180);
 
   // make left and bottom axes transfer their ranges to right and top axes:
   connect(customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->xAxis2, SLOT(setRange(QCPRange)));

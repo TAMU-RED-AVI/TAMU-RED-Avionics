@@ -7,9 +7,6 @@
 #include <cstring>
 #include <cmath>
 #include <algorithm>
-#define BUF_SIZE 1024
-#define WINSOCK_DEPRECATED_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <Windows.h>
@@ -37,7 +34,11 @@ using namespace Eigen;
 
 
 // Definitions
+const int num_tags = 4;
+const int num_data_pts = 13;
 const double inch_to_meter = 0.0254;
+
+PositionMatrix anchor_positions; // Anchor Positions in x,y,z
 Matrix<double, 4, 3> Tags_previous
     {
         {1.0, 1.0, 1.0},
@@ -53,6 +54,7 @@ Matrix<double, 4, 4> previous_IMU_data
         {0.0, 0.0, 0.0, 0.0},
         {0.0, 0.0, 0.0, 0.0}
     };
+int displayIterations = 0;
 
 // Socket setup
 //const int num_ports = 1;
@@ -65,7 +67,8 @@ Matrix<double, 4, 4> previous_IMU_data
 //char buffer[1024];
 
 // Serial setup
-HANDLE hSerial = CreateFile(TEXT("COM3"), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+HANDLE hSerial;
+DCB dcbSerialParams = { 0 };
 std::string completeMessage;
 byte buffer[1024];
 size_t MAX_MESSAGE_SIZE = 750;
@@ -161,7 +164,6 @@ void readDimensions(string filename, double& length, double& width, PositionMatr
 }
 
 
-
 // Function to save dimensions to a text file
 void saveDimensions(double length, double width, PositionMatrix anchor_positions, string filename)
 {
@@ -195,8 +197,9 @@ void saveDimensions(double length, double width, PositionMatrix anchor_positions
 *****************************************/
 
 // Incoming Data Processing
-Matrix<double, 16, 1> dataProcessing(string str)
+Matrix<double, num_data_pts, 1> dataProcessing(string str)
 {
+
     vector<double> tempData;
 
     size_t start = str.find("[") + 1;
@@ -224,9 +227,6 @@ float readSensorData() {
    *********** ROOM CONFIG ***********
    ***********************************/
 
-    // Anchor Positions in x,y,z
-    PositionMatrix anchor_positions;
-
     // Room Dimensions
     double length;
     double width;
@@ -240,167 +240,138 @@ float readSensorData() {
     // Check if the file was opened successfully
     if (!outFile) {
         std::cerr << "Error opening file." << endl;
-        return 1;
     }
-
-    /*************************************
-   *********** SERIAL STARTUP ***********
-   *************************************/
-
-    HANDLE hSerial = CreateFile(TEXT("COM4"), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-    if (hSerial == INVALID_HANDLE_VALUE) {
-        // Handle error
-        throw runtime_error("Connection Not Init Properly");
-    }
-    DCB dcbSerialParams = { 0 };
-    dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
-    GetCommState(hSerial, &dcbSerialParams);
-    dcbSerialParams.BaudRate = CBR_256000;
-    dcbSerialParams.ByteSize = 8;
-    dcbSerialParams.StopBits = ONESTOPBIT;
-    dcbSerialParams.Parity = NOPARITY;
-    SetCommState(hSerial, &dcbSerialParams);
-
-    if (!PurgeComm(hSerial, PURGE_RXCLEAR && PURGE_TXCLEAR)) {
-        // Handle the error, if needed.
-        throw runtime_error("Failed to purge the buffers");
-    }
-
-    cout << "Serial Start Up Complete" << endl;
 
     /**************************************
    *********** DATA PROCESSING ***********
    **************************************/
 
-    bool quit = false;
-    while (!quit) {
+    // get the current timestamp
+    auto now = std::chrono::system_clock::now();
+    // convert the timestamp to a time_t object
+    time_t timestamp = std::chrono::system_clock::to_time_t(now);
+    // set the desired timezone
+    tm timeinfo;
+    localtime_s(&timeinfo, &timestamp);
 
-        // get the current timestamp
-        auto now = std::chrono::system_clock::now();
-        // convert the timestamp to a time_t object
-        time_t timestamp = std::chrono::system_clock::to_time_t(now);
-        // set the desired timezone
-        tm timeinfo;
-        localtime_s(&timeinfo, &timestamp);
+    int hours = timeinfo.tm_hour;
+    int minutes = timeinfo.tm_min;
+    int seconds = timeinfo.tm_sec;
 
-        int hours = timeinfo.tm_hour;
-        int minutes = timeinfo.tm_min;
-        int seconds = timeinfo.tm_sec;
-        int displayIterations = 0;
+    // Defines variables for location coordinates
+    Matrix<double, 4, 3> Tags_position;
 
-        // Defines variables for location coordinates
-        const int num_tags = 4;
-        Matrix<double, 4, 3> Tags_position;
+    double yaw;
 
-        double yaw;
+    MatrixXd tag_data(num_tags, num_data_pts);
+    VectorXd distances(12);
 
-        MatrixXd tag_data(num_tags, 16);
-        VectorXd distances(12);
+    string completeMessage = "";
+    byte buffer[1024];
+    size_t MAX_MESSAGE_SIZE = 750;
 
-        string completeMessage;
-        byte buffer[1024];
-        size_t MAX_MESSAGE_SIZE = 750;
+    bool reading = false; // represents if we are currently reading a message
 
-        bool cleared = false;
-        while (true)
+    DWORD bytesRead;
+    char c = '\0';
+
+//    if (!PurgeComm(hSerial, PURGE_RXCLEAR | PURGE_TXCLEAR)) {
+//        // Handle the error, if needed.
+//        throw runtime_error("Failed to purge the buffers");
+//    }
+
+    while (c != '<' || reading){
+        if (!ReadFile(hSerial, &c, 1, &bytesRead, NULL) || bytesRead == 0) {
+            // Handle error
+            cout << "Bytes Read: " << bytesRead << endl;
+            throw runtime_error("Bytes Not Correctly Read, In Loop");
+        };
+
+        if (c == '<')
         {
-
-            DWORD bytesRead;
-            char c;
-
-            if (!ReadFile(hSerial, &c, 1, &bytesRead, NULL) || bytesRead == 0) {
-                // Handle error
-                throw runtime_error("Bytes Not Correctly Read, In Loop");
-            };
-
-            if (c == '<')
-            {
-                // Start of a message
-                completeMessage.clear();
-                cleared = true;
-            }
-            else if (c == '>' && cleared)
-            {
-                size_t start = 1, end = 0;
-                for (int u = 0; u < num_tags; ++u)
-                {
-                    // Iterating through each vector within the 2D matrix
-                    end = completeMessage.find("]", start);
-                    tag_data.row(u) = dataProcessing(completeMessage.substr(start, end - start + 1)).transpose();
-                    start = end + 2;
-                }
-                // Reset the completeMessage for the next read
-                completeMessage.clear();
-                break;
-            }
-            else
-            {
-                completeMessage += c;
-            }
-
+            // Start of a message
+            completeMessage.clear();
+            reading = true;
         }
-
-        // Prints out data received
-        cout << tag_data << endl;
-
-        // Loop through the tags
-        for (int j = 0; j < num_tags; ++j) {
-            distances = tag_data.row(j).head(12);
-            yaw = tag_data(j, 12);
-
-            // cout << roll << ", " << pitch << ", " << yaw << ", " << dt << endl;
-
-            // Call the multilateration function
-            Vector3d Tags_current;
-            LMsolution result;
-            try
+        else if (c == '>' && reading)
+        {
+            // cout << completeMessage << endl;
+            size_t start = 1, end = 0;
+            for (int u = 0; u < num_tags; ++u)
             {
-                result = RootFinder::LevenbergMarquardt(anchor_positions, distances, Tags_previous.row(j).transpose());
-                Tags_current = result.solution;
+                // Iterating through each vector within the 2D matrix
+                end = completeMessage.find("]", start);
+                tag_data.row(u) = dataProcessing(completeMessage.substr(start, end - start + 1)).transpose();
+                start = end + 2;
             }
-            catch (_exception& e)
-            {
-                Tags_current = Tags_previous.row(j).transpose();
-                throw runtime_error("Exception in LM");
-            }
-
-            if (result.exit_type == ExitType::AboveMaxIterations)
-            {
-                throw runtime_error("Max Iterations in LM");
-            }
-
-            if (result.exit_type == ExitType::BelowDynamicTolerance)
-            {
-                cout << "DYNAMIC TOLERANCE EXIT WARNING. Iterations: " << result.iterations << endl;
-            }
-
-            distances.setZero();
-
-            if (abs(Tags_current.norm() - Tags_previous.row(j).norm()) < 0.25)
-            {
-                Tags_position.row(j) = Tags_current;
-            }
-            else if (displayIterations > 0)
-            {
-                Tags_position.row(j) = Tags_previous.row(j);
-                cout << "PREVIOUS USED" << endl;
-            }
-            else
-            {
-                Tags_position.row(j) = Tags_current;
-            }
-
-
-            // writes the location data to the console
-            cout << "x: " << Tags_position.row(j)[0] << ", y: " << Tags_position.row(j)[1] << ", z: " << Tags_position.row(j)[2] << ", Time: " << hours << ":" << minutes << ":" << seconds << endl;
-
+            // Reset the completeMessage for the next read
+            completeMessage.clear();
+            reading = false;
+            break;
         }
-
-        displayIterations++;
+        else
+        {
+            completeMessage += c;
+        }
     }
 
-    // Close the file
-    outFile.close();
+    // Prints out data received
+    // cout << tag_data << endl;
+
+    // Loop through the tags
+    for (int j = 0; j < num_tags; ++j) {
+
+        distances = tag_data.row(j).head(12);
+        yaw = tag_data(j, 12);
+
+        // Call the multilateration function
+        Vector3d Tags_current;
+        LMsolution result;
+        try
+        {
+            result = RootFinder::LevenbergMarquardt(anchor_positions, distances, Tags_previous.row(j).transpose());
+            Tags_current = result.solution;
+        }
+        catch (_exception& e)
+        {
+            Tags_current = Tags_previous.row(j).transpose();
+            throw runtime_error("Exception in LM");
+        }
+
+        if (result.exit_type == ExitType::AboveMaxIterations)
+        {
+            throw runtime_error("Max Iterations in LM");
+        }
+
+        if (result.exit_type == ExitType::BelowDynamicTolerance)
+        {
+            cout << "DYNAMIC TOLERANCE EXIT WARNING. Iterations: " << result.iterations << endl;
+        }
+
+        distances.setZero();
+
+        if (abs(Tags_current.norm() - Tags_previous.row(j).norm()) < 0.25)
+        {
+            Tags_position.row(j) = Tags_current;
+        }
+        else if (displayIterations > 0)
+        {
+            Tags_position.row(j) = Tags_previous.row(j);
+            cout << "PREVIOUS USED" << endl;
+        }
+        else
+        {
+            Tags_position.row(j) = Tags_current;
+        }
+
+
+        // writes the location data to the console
+        cout << "x: " << Tags_position.row(j)[0] << ", y: " << Tags_position.row(j)[1] << ", z: " << Tags_position.row(j)[2] << ", yaw: " << yaw << ", Time: " << hours << ":" << minutes << ":" << seconds << endl;
+
+    }
+    cout << endl;
+
+    return yaw;
 
 }
 
@@ -422,8 +393,8 @@ void MainWindow::realtimeDataSlot()
         ui->customPlot1->graph(0)->addData(key, qSin(key)+std::rand()/(double)RAND_MAX*1*qSin(key/0.4));
         ui->customPlot1->graph(1)->addData(key, orientation);
         // rescale value (vertical) axis to fit the current data:
-        ui->customPlot1->graph(0)->rescaleValueAxis();
-        ui->customPlot1->graph(1)->rescaleValueAxis(true);
+//        ui->customPlot1->graph(0)->rescaleValueAxis();
+//        ui->customPlot1->graph(1)->rescaleValueAxis(true);
         lastPointKey = key;
     }
     // make key axis range scroll with the data (at a constant range size of 8):
@@ -461,9 +432,6 @@ int main(int argc, char *argv[])
     *********** ROOM CONFIG ***********
     ***********************************/
 
-    // Anchor Positions in x,y,z
-    PositionMatrix anchor_positions;
-
     // Room Dimensions
     double length;
     double width;
@@ -494,7 +462,7 @@ int main(int argc, char *argv[])
     cout << "Screen size (pixels): " << screen_height << " x " << screen_width << endl;
     cout << "Anchor points (m): " << endl;
     for (int i = 0; i < anchor_positions.rows(); ++i) {
-        // cout << "  Point " << (i + 1) << ": " << anchor_positions.row(i).transpose() << endl;
+        cout << "  Point " << (i + 1) << ": " << anchor_positions.row(i) << endl;
     }
 
     // Open the file for writing
@@ -510,24 +478,32 @@ int main(int argc, char *argv[])
     *********** SERIAL STARTUP ***********
     *************************************/
 
-    HANDLE hSerial = CreateFile(TEXT("COM3"), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    hSerial = CreateFile(TEXT("COM3"), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
     if (hSerial == INVALID_HANDLE_VALUE) {
         // Handle error
         throw runtime_error("Connection Not Init Properly");
     }
-    DCB dcbSerialParams = { 0 };
     dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
     GetCommState(hSerial, &dcbSerialParams);
-    dcbSerialParams.BaudRate = CBR_256000;
+    dcbSerialParams.BaudRate = CBR_9600;
     dcbSerialParams.ByteSize = 8;
     dcbSerialParams.StopBits = ONESTOPBIT;
     dcbSerialParams.Parity = NOPARITY;
     SetCommState(hSerial, &dcbSerialParams);
 
-    if (!PurgeComm(hSerial, PURGE_RXCLEAR && PURGE_TXCLEAR)) {
+    if (!PurgeComm(hSerial, PURGE_RXCLEAR | PURGE_TXCLEAR)) {
         // Handle the error, if needed.
         throw runtime_error("Failed to purge the buffers");
     }
+
+    DWORD bytesRead;
+    char c;
+
+    if (!ReadFile(hSerial, &c, 1, &bytesRead, NULL) || bytesRead == 0) {
+        // Handle error
+        cout << "Bytes Read: " << bytesRead << endl;
+        throw runtime_error("Bytes Not Correctly Read, In Main");
+    };
 
     cout << "Serial Start Up Complete" << endl;
 
