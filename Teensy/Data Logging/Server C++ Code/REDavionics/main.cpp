@@ -1,65 +1,45 @@
 #include <iostream>
-#include <winsock2.h>
-#include <ctime>
+#include <boost/asio.hpp>
+#include <nlohmann/json.hpp>
 
-#pragma comment(lib, "ws2_32.lib")
+using boost::asio::ip::udp;
+using json = nlohmann::json;
 
-int main() {
-    WSADATA wsaData;
-    SOCKET ListenSocket = INVALID_SOCKET;
-    SOCKET ClientSocket = INVALID_SOCKET;
-    struct sockaddr_in server, client;
-
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        std::cerr << "Failed to initialize." << std::endl;
-        return 1;
-    }
-
-    ListenSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (ListenSocket == INVALID_SOCKET) {
-        std::cerr << "Socket creation failed." << std::endl;
-        return 1;
-    }
-
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons(1234);
-
-    if (bind(ListenSocket, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR) {
-        std::cerr << "Bind failed." << std::endl;
-        return 1;
-    }
-
-    listen(ListenSocket, 1);
-    std::cout << "Waiting for connections..." << std::endl;
-
-    int clientSize = sizeof(struct sockaddr_in);
-    ClientSocket = accept(ListenSocket, (struct sockaddr*)&client, &clientSize);
-    if (ClientSocket == INVALID_SOCKET) {
-        std::cerr << "Accept failed." << std::endl;
-        return 1;
-    }
-
-    std::cout << "Connected." << std::endl;
-
-    char buffer[1024];
-    int bytesReceived;
-    int totalBytes = 0;
-    time_t startTime = time(NULL);
-    while (true) {
-        bytesReceived = recv(ClientSocket, buffer, sizeof(buffer), 0);
-        totalBytes += bytesReceived;
-
-        if (difftime(time(NULL), startTime) >= 1) {
-            std::cout << "Data rate: " << totalBytes << " bytes/second" << std::endl;
-            totalBytes = 0;
-            startTime = time(NULL);
+void processJson(const std::string& jsonString) {
+    try {
+        json j = json::parse(jsonString);
+        for (auto& sensor : j["sensors"]) {
+            int type = sensor["type"];
+            // Process according to sensor type, for example:
+            if (type == 0) { // THERMOCOUPLE
+                auto temperatures = sensor["temperatures"];
+                for (double temp : temperatures) {
+                    std::cout << "Temperature: " << temp << std::endl;
+                }
+            }
+            // Add handling for other sensor types here...
         }
     }
+    catch (const json::exception& e) {
+        std::cerr << "JSON Exception: " << e.what() << std::endl;
+    }
+}
 
-    closesocket(ClientSocket);
-    closesocket(ListenSocket);
-    WSACleanup();
+int main() {
+    try {
+        boost::asio::io_service io_service;
+        udp::socket socket(io_service, udp::endpoint(udp::v4(), 1234));
 
+        while (true) {
+            udp::endpoint sender_endpoint;
+            char recv_buffer[2048];
+            size_t len = socket.receive_from(boost::asio::buffer(recv_buffer), sender_endpoint);
+            std::string jsonString(recv_buffer, len);
+            processJson(jsonString);
+        }
+    }
+    catch (std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
     return 0;
 }
