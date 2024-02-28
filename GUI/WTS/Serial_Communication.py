@@ -20,16 +20,19 @@ class Serial_COM():
         if len(ports) > 0:
             for port, desc, hwid in sorted(ports):
                 print("COM PORT FOUND:", "[{}][{}][{}]".format(port, desc, hwid))
-                if "13960230" in hwid:
+                if "13960230" or "14200900" in hwid:
                     self.teensy_ports.append(port)
-            print("\nsearching for teensy ports...")
+                # Virtual port used for testing
+                if "CNCB0" in hwid or "CNCA0" in hwid or "CNCA1" in hwid or "CNCB1" in hwid:
+                    self.teensy_ports.append(port)
+            print("searching for teensy ports...")
             if len(self.teensy_ports) > 0:
                 for port in self.teensy_ports:
                     print("TEENSY PORT FOUND:", port)
             else:
-                print("NO TEENSY PORT FOUND: make sure a teensy is plugged in and refresh.", "\n")
+                print("NO TEENSY PORT FOUND: make sure a teensy is plugged in and refresh.")
         else:
-            print("NO COM PORT FOUND: make sure a serial port is plugged in and refresh.", "\n")
+            print("NO COM PORT FOUND: make sure a serial port is plugged in and refresh.")
     
     def SerialOpen(self, ComGUI):
         '''
@@ -44,6 +47,7 @@ class Serial_COM():
             self.ser = serial.Serial()
             self.ser.baudrate = BAUD
             self.ser.port = PORT
+            # TESTING (WAS 0.1)
             self.ser.timeout = 0.1
         try:
             if self.ser.is_open:
@@ -55,18 +59,24 @@ class Serial_COM():
                 self.ser = serial.Serial()
                 self.ser.baudrate = BAUD
                 self.ser.port = PORT
+                # TESTING (WAS 0.01)
                 self.ser.timeout = 0.01
+
                 self.ser.open()
                 self.ser.status = True
         except:
             self.ser.status = False
 
-    def SerialClose(self, ComGUI):
+    def SerialClose(self):
         '''
-        Method used to close the UART communication
+        Method used to close the communication
         '''
         try:
             self.ser.is_open
+            # close both valves first
+            # perhaps add a delay inbetween commands??
+            self.actuate("v1", "CLOSE")
+            self.actuate("v2", "CLOSE")
             self.ser.close()
             self.ser.status = False
         except:
@@ -76,8 +86,26 @@ class Serial_COM():
         '''
         Method to read analog data from teensy
         '''
-        # add logic to repeat reading the data
-        self.ser = serial.Serial("COM5", baudrate=9600, timeout=1)
-        self.teensyData = self.ser.readline().decode('ascii')
-        print(self.teensyData)
-        # add logic to store the teensy data
+        self.teensyData = self.ser.readline()
+        self.teensyData = self.teensyData.decode("ascii").rstrip()
+        return self.teensyData.split(',')
+    
+    def actuate(self, valve, command):
+        '''
+        Method to actuate the MOSFETs that control the solenoid valves
+        '''
+        # use input data to figure out what to write to the teensy
+        if valve == "v1":
+            if command == "OPEN":
+                case = "0"                  # pin 2, high
+            else:
+                case = "1"                  # pin 2, low
+        else:
+            if command == "OPEN":
+                case = "2"                  # pin 9, high
+            else:
+                case = "3"                  # pin 9, low
+        self.ser.write(case.encode())
+
+        # report logic to terminal
+        print(valve, command + ":", case.encode())
